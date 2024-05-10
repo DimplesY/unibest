@@ -18,15 +18,14 @@ import UnoCSS from 'unocss/vite'
 // import autoprefixer from 'autoprefixer'
 // @see https://github.com/jpkleemans/vite-svg-loader
 import svgLoader from 'vite-svg-loader'
+// @see https://github.com/vbenjs/vite-plugin-svg-icons
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 // @see https://github.com/vbenjs/vite-plugin-vue-setup-extend
 import vueSetupExtend from 'vite-plugin-vue-setup-extend'
-// @see https://github.com/vbenjs/vite-plugin-svg-icons
 import AutoImport from 'unplugin-auto-import/vite'
 // import viteCompression from 'vite-plugin-compression'
 import ViteRestart from 'vite-plugin-restart'
 import { visualizer } from 'rollup-plugin-visualizer'
-import { viteMockServe } from 'vite-plugin-mock'
 import imagemin from './vite-plugins/imagemin'
 
 console.log('process.platform -> ', process.platform)
@@ -54,7 +53,7 @@ export default ({ command, mode }) => {
 
     plugins: [
       UniPages({
-        exclude: ['**/components/**/**.*', '**/my/**/**.vue'],
+        exclude: ['**/components/**/**.*'],
         routeBlockLang: 'json5', // 虽然设了默认值，但是vue文件还是要加上 lang="json5", 这样才能很好地格式化
         homePage: 'pages/index/index',
         subPackages: ['src/pages-sub'], // 是个数组，可以配置多个
@@ -73,7 +72,7 @@ export default ({ command, mode }) => {
       }),
       createSvgIconsPlugin({
         // 指定要缓存的文件夹
-        iconDirs: [path.resolve(process.cwd(), 'src/assets/svg')],
+        iconDirs: [path.resolve(process.cwd(), 'src/assets')],
         // 指定symbolId格式
         symbolId: 'icon-[dir]-[name]',
       }),
@@ -81,8 +80,9 @@ export default ({ command, mode }) => {
       AutoImport({
         imports: ['vue', 'uni-app'],
         dts: 'src/auto-import.d.ts',
-        // dirs: ['src/hooks'], // 自动导入 hooks
+        dirs: ['src/hooks'], // 自动导入 hooks
         eslintrc: { enabled: false },
+        vueTemplate: true, // default false
       }),
 
       // viteCompression(),
@@ -108,12 +108,6 @@ export default ({ command, mode }) => {
       // 这个图片压缩插件比较耗时，希望仅在生产环境使用
       // TODO: 缓存每次压缩过的图片，已经压缩过的不再压缩
       imagemin(mode === 'production'),
-      viteMockServe({
-        ignore: /^_/,
-        mockPath: 'mock',
-        // 根据项目配置，可以配置在.env文件
-        enable: true,
-      }),
     ],
 
     css: {
